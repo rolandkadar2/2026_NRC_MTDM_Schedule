@@ -106,4 +106,48 @@ function closePanel(){overlay.classList.remove("open");overlay.setAttribute("ari
 close.addEventListener("click",closePanel);overlay.addEventListener("click",e=>{if(e.target===overlay)closePanel()});document.addEventListener("keydown",e=>{if(e.key==="Escape"&&overlay.classList.contains("open"))closePanel()});
 </script>
 </body>
+</html>      const tracks=document.createElement("div");tracks.className="tracks";tracks.style.setProperty("--n",b.tracks);
+      for(let t=0;t<b.tracks;t++){
+        const group=document.createElement("div");group.className="track-group";group.innerHTML=`<div class="track-label">Track ${t+1}</div>`;
+        const ids=LAYOUT[`A|${day}|${i}|${t}`]||[];
+        for(const [slotIndex,id] of ids.entries()){
+          const talk=TALKS[String(id)];if(!talk)continue;
+          talkCount+=id==="WS"?0:1;
+          const tile=document.createElement("button");tile.type="button";tile.className=id==="WS"?"ws-tile":"tile";tile.style.setProperty("--tile-bg",COLOR[talk.sess]||"#fff");
+          const timing=id==="WS"&&talk.a&&talk.b?`${esc(talk.a)}–${esc(talk.b)}`:addMinutes(b.a,slotIndex*20);
+          tile.innerHTML=`<span class="ttl${displayTitle(talk)==="TBA"?" tbc":""}">${esc(displayTitle(talk))}</span><span class="who"><span class="slot-time">${timing}</span> · ${esc(talk.who)}</span>${publicId(talk)?`<span class="id">${publicId(talk)}</span>`:""}`;
+          tile.addEventListener("click",()=>openPanel(talk));group.appendChild(tile);
+        }
+        tracks.appendChild(group);
+      }
+      wrap.appendChild(tracks);page.appendChild(wrap);
+    }else if(b.kind==="plen"||b.kind==="mishra"){
+      const el=document.createElement("section");el.className="block block-plen"+(b.noIntro?"":" has-intro");
+      el.innerHTML=(b.noIntro?"":'<div class="block-intro">Intro &amp; announcements</div>')+`<div class="block-plen-body"><span class="time">${esc(b.a)} – ${esc(b.b)}</span><span class="name">${esc(b.label)}</span><span class="invited-title${b.talkTitle==="TBA"?" tbc":""}">${esc(b.talkTitle||"TBA")}</span></div>`;page.appendChild(el);
+    }else{
+      const cls={lunch:"block-lunch",reg:"block-reg",post:"block-post",ess:"block-ess",break:"block-break",wshop:"block-post"}[b.kind]||"block-reg";
+      const el=document.createElement("section");el.className="block "+cls;el.innerHTML=`<div class="name-row"><span>${esc(b.label)}</span><span>${esc(b.a)} – ${esc(b.b)}</span></div>`;page.appendChild(el);
+    }
+  });main.appendChild(page);
+}
+const posterPage=document.createElement("section");posterPage.className="day";posterPage.dataset.day="Posters";
+posterPage.innerHTML='<div class="poster-head"><div><h2 class="day-title">Poster presentations</h2><p>Poster session: Wednesday 26 August, 18:00–20:00 at MAX IV.</p></div></div>';
+const posterList=document.createElement("div");posterList.className="poster-list";
+for(const p of Object.values(POSTERS)){
+  const tile=document.createElement("button");tile.type="button";tile.className="poster-tile";tile.style.setProperty("--tile-bg",COLOR[p.sess]||"#fff");
+  tile.innerHTML=`<span class="ttl${displayTitle(p)==="TBA"?" tbc":""}">${esc(displayTitle(p))}</span><span class="who">${esc(p.who)}</span>${publicId(p)?`<span class="id">${publicId(p)}</span>`:""}`;
+  tile.addEventListener("click",()=>openPanel(p));posterList.appendChild(tile);
+}
+posterPage.appendChild(posterList);main.appendChild(posterPage);
+document.getElementById("talkCount").textContent=talkCount;
+document.getElementById("posterCount").textContent=Object.keys(POSTERS).length;
+tabs.addEventListener("click",e=>{const b=e.target.closest("[data-day]");if(!b)return;document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("active",x===b));document.querySelectorAll(".day").forEach(x=>x.classList.toggle("active",x.dataset.day===b.dataset.day));scrollTo({top:0,behavior:"smooth"});});
+const overlay=document.getElementById("overlay"),body=document.getElementById("panelBody"),close=document.querySelector(".close");let lastFocus;
+function openPanel(t){lastFocus=document.activeElement;const authorText=(t.authors||[]).map(a=>a.presenting?`<strong>${esc(a.name)}</strong>`:esc(a.name)).join(", ");const details=[t.inst,t.country].filter(Boolean).map(esc).join(" · ");
+  body.innerHTML=`<div class="id">${publicId(t)}</div><h2 id="panelTitle" class="${displayTitle(t)==="TBA"?"tbc":""}">${esc(displayTitle(t))}</h2><div class="presenter">${esc(t.who)}</div>${t.sess&&t.sess!=="__WS__"?`<div class="session" style="background:${COLOR[t.sess]||"#eee"}">${esc(t.sess)}</div>`:""}${authorText?`<div class="authors">${authorText}</div>`:""}${details?`<div>${details}</div>`:""}${t.abstract?`<div class="abstract">${esc(t.abstract)}</div>`:'<div class="abstract tbc">Abstract to be confirmed.</div>'}`;
+  overlay.classList.add("open");overlay.setAttribute("aria-hidden","false");document.body.style.overflow="hidden";close.focus();}
+function closePanel(){overlay.classList.remove("open");overlay.setAttribute("aria-hidden","true");document.body.style.overflow="";lastFocus?.focus();}
+close.addEventListener("click",closePanel);overlay.addEventListener("click",e=>{if(e.target===overlay)closePanel()});document.addEventListener("keydown",e=>{if(e.key==="Escape"&&overlay.classList.contains("open"))closePanel()});
+</script>
+</body>
 </html>
